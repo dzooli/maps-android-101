@@ -17,12 +17,11 @@ package com.google.codelabs.buildyourfirstmap
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.alpha
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.BitmapDescriptor
-import com.google.android.gms.maps.model.Circle
-import com.google.android.gms.maps.model.CircleOptions
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import com.google.codelabs.buildyourfirstmap.place.Place
 import com.google.codelabs.buildyourfirstmap.place.PlaceRenderer
 import com.google.codelabs.buildyourfirstmap.place.PlacesReader
@@ -48,11 +47,14 @@ class MainActivity : AppCompatActivity() {
         val mapFragment = supportFragmentManager.findFragmentById(
             R.id.map_fragment
         ) as SupportMapFragment
-        mapFragment.getMapAsync {
+        mapFragment?.getMapAsync {
             googleMap ->
-                //googleMap->addMarkers(googleMap)
-                //googleMap.setInfoWindowAdapter(MarkerInfoWindowAdapter(this))
                 addClusteredMarkers(googleMap)
+            googleMap.setOnMapLoadedCallback {
+                val bounds = LatLngBounds.builder()
+                places.forEach { bounds.include(it.latLng) }
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 20))
+            }
         }
     }
 
@@ -66,7 +68,14 @@ class MainActivity : AppCompatActivity() {
             item -> addCircle(googleMap, item)
             return@setOnClusterItemClickListener false
         }
-        googleMap.setOnCameraIdleListener { clusterManager.onCameraIdle() }
+        googleMap.setOnCameraMoveStartedListener {
+            clusterManager.markerCollection.markers.forEach { it.alpha = 0.3f }
+            clusterManager.clusterMarkerCollection.markers.forEach { it.alpha = 0.3f }
+        }
+        googleMap.setOnCameraIdleListener {
+            clusterManager.markerCollection.markers.forEach { it.alpha = 1.0f }
+            clusterManager.clusterMarkerCollection.markers.forEach { it.alpha = 1.0f }
+            clusterManager.onCameraIdle() }
     }
 
     private fun addCircle(googleMap: GoogleMap, item: Place)

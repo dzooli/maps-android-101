@@ -18,6 +18,7 @@
 <resources>
   <color name="colorPrimary">#6200EE</color>
   <color name="colorPrimaryTranslucent">#556200EE</color>
+  <color name="colorPrimaryTranslucentMoving">#55620044</color>
   <color name="colorPrimaryDark">#3700B3</color>
   <color name="colorAccent">#03DAC5</color>
 </resources>
